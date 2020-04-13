@@ -4,6 +4,8 @@ sys.path.append('./')
 from src.substitutor import Substitutor
 from src.utils import load_json_pairs
 
+# Run me from the base directory.
+
 # Example text which requires NER and POS information to properly invert
 text = "Amber grabbed her pick-axe and began chipping away at the last of the amber."
 
