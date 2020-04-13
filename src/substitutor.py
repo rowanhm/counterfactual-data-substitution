@@ -17,6 +17,7 @@ class Substitutor:
         self.nlp = spacy.load(spacy_model)
         logging.info("Done.")
 
+        # This flag tells it whether or not to apply the special case intervention to him/his/her/hers
         self.his_him = his_him
 
         self.base_pairs = TwoWayDict()
@@ -35,6 +36,7 @@ class Substitutor:
                 yield text
 
     def invert_document(self, input_text):
+        # Parse the doc
         doc = self.nlp(input_text)
 
         output = input_text
@@ -42,9 +44,11 @@ class Substitutor:
         # Walk through in reverse order making substitutions
         for word in reversed(doc):
 
+            # Calculate inversion
             flipped = self.invert_word(word)
 
             if flipped is not None:
+                # Splice it into output
                 start_index = word.idx
                 end_index = start_index + len(word.text)
                 output = output[:start_index] + flipped + output[end_index:]
@@ -64,7 +68,7 @@ class Substitutor:
         elif text in self.name_pairs.keys() and spacy_word.ent_type_ == "PERSON":
             flipped = self.name_pairs[text]
 
-        # Handle special case
+        # Handle special case (his/his/her/hers)
         elif self.his_him:
             pos = spacy_word.tag_
             if text == "him":
@@ -83,11 +87,14 @@ class Substitutor:
                 flipped = "his"
 
         if flipped is not None:
+            # Attempt to approximate case-matching
             return self.match_case(flipped, spacy_word.text)
         return None
 
     @staticmethod
     def match_case(input_string, target_string):
+        # Matches the case of a target string to an input string
+        # This is a very naive approach, but for most purposes it should be okay.
         if target_string.islower():
             return input_string.lower()
         elif target_string.isupper():
